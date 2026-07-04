@@ -1,0 +1,17 @@
+﻿{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Deep Research Agent System - Frontend",
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "watch": "tsc --project tsconfig.json --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
