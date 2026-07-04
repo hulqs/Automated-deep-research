@@ -1,0 +1,45 @@
+﻿# Deep Research Agent System - Backend Dependencies
+
+# Web Framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# Database
+sqlalchemy==2.0.35
+alembic==1.13.2
+aiosqlite==0.20.0
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+
+# HTTP & API
+httpx==0.27.0
+aiohttp==3.10.5
+
+# Data Validation
+pydantic==2.9.0
+pydantic-settings==2.5.0
+
+# Search & Scraping
+beautifulsoup4==4.12.3
+lxml==5.3.0
+wikipedia==1.4.0
+
+# OpenAI SDK
+openai==1.51.0
+
+# Markdown & Text Processing
+markdown==3.7
+python-frontmatter==1.1.0
+
+# Async Support
+anyio==4.4.0
+
+# CORS
+# LangChain
+langchain>=0.3.1
+langchain-openai==0.2.0
+json-repair==0.25.0
+tenacity==9.0.0
