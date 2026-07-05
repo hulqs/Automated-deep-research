@@ -85,267 +85,56 @@ LLM 输出的结构化数据经过**三层容错处理**：标准 JSON 解析 �
 -   🎓 学生的研究入门与文献检索
 
 ---
-
 ## 🔧 技术栈
 
 ### 后端
 
-类别
-
-技术
-
-版本
-
-用途
-
-**Web 框架**
-
-FastAPI
-
-0.115.0
-
-高性能异步 REST API
-
-**ASGI 服务器**
-
-Uvicorn
-
-0.30.0
-
-生产级 ASGI 服务
-
-**ORM**
-
-SQLAlchemy
-
-2.0.35
-
-异步数据库 ORM
-
-**数据库驱动**
-
-aiosqlite
-
-0.20.0
-
-SQLite 异步驱动
-
-**数据校验**
-
-Pydantic
-
-2.9.0
-
-请求/响应模型验证
-
-**配置管理**
-
-pydantic-settings
-
-2.5.0
-
-环境变量与 .env 配置
-
-**AI 框架**
-
-LangChain
-
-0.3+
-
-LLM 调用、Prompt 模板、输出解析
-
-**LLM 适配**
-
-langchain-openai
-
-0.2.0
-
-OpenAI 兼容接口适配
-
-**OpenAI SDK**
-
-openai
-
-1.51.0
-
-底层 API 通信
-
-**认证**
-
-python-jose
-
-3.3.0
-
-JWT 令牌生成与验证
-
-**密码哈希**
-
-passlib[bcrypt]
-
-1.7.4
-
-bcrypt 密码加密
-
-**HTTP 客户端**
-
-httpx
-
-0.27.0
-
-异步 HTTP 请求
-
-**HTTP 客户端**
-
-aiohttp
-
-3.10.5
-
-异步 HTTP 会话管理
-
-**网页解析**
-
-BeautifulSoup4
-
-4.12.3
-
-HTML 内容提取
-
-**XML 解析**
-
-lxml
-
-5.3.0
-
-高性能 HTML/XML 解析
-
-**JSON 修复**
-
-json-repair
-
-0.25.0
-
-自动修复 LLM 输出的畸形 JSON
-
-**重试机制**
-
-tenacity
-
-9.0.0
-
-指数退避重试策略
-
-**环境变量**
-
-python-dotenv
-
--
-
-.env 文件加载
-
-**CORS**
-
--
-
--
-
-FastAPI 内置 CORSMiddleware
+| 类别 | 技术 | 版本 | 用途 |
+|------|------|------|------|
+| **Web 框架** | FastAPI | `0.115.0` | 高性能异步 REST API |
+| **ASGI 服务器** | Uvicorn | `0.30.0` | 生产级 ASGI 服务 |
+| **ORM** | SQLAlchemy | `2.0.35` | 异步数据库 ORM |
+| **数据库驱动** | aiosqlite | `0.20.0` | SQLite 异步驱动 |
+| **数据校验** | Pydantic | `2.9.0` | 请求与响应模型验证 |
+| **配置管理** | pydantic-settings | `2.5.0` | 环境变量与 `.env` 配置 |
+| **AI 框架** | LangChain | `0.3+` | LLM 调用、Prompt 模板与输出解析 |
+| **LLM 适配** | langchain-openai | `0.2.0` | OpenAI 兼容接口适配 |
+| **OpenAI SDK** | openai | `1.51.0` | 底层 API 通信 |
+| **身份认证** | python-jose | `3.3.0` | JWT 令牌生成与验证 |
+| **密码哈希** | passlib[bcrypt] | `1.7.4` | bcrypt 密码加密 |
+| **HTTP 客户端** | httpx | `0.27.0` | 异步 HTTP 请求 |
+| **HTTP 客户端** | aiohttp | `3.10.5` | 异步 HTTP 会话管理 |
+| **网页解析** | BeautifulSoup4 | `4.12.3` | HTML 内容提取 |
+| **XML 解析** | lxml | `5.3.0` | 高性能 HTML/XML 解析 |
+| **JSON 修复** | json-repair | `0.25.0` | 自动修复 LLM 输出的畸形 JSON |
+| **重试机制** | tenacity | `9.0.0` | 指数退避重试策略 |
+| **环境变量** | python-dotenv | - | 加载 `.env` 配置文件 |
+| **跨域支持** | FastAPI CORSMiddleware | 内置 | CORS 配置 |
+
+---
 
 ### 前端
 
-类别
+| 类别 | 技术 | 版本 | 用途 |
+|------|------|------|------|
+| **开发语言** | TypeScript | `5.0+` | 类型安全的前端开发 |
+| **构建工具** | TypeScript Compiler | `5.0+` | TypeScript 编译 |
+| **开发服务器** | serve | `14.2.0` | 本地静态资源服务 |
+| **样式方案** | CSS Custom Properties | - | 设计系统与多主题切换 |
+| **字体** | Plus Jakarta Sans | - | Google Fonts 现代无衬线字体 |
+| **国际化** | 自研 i18n | - | TypeScript 运行时国际化 |
 
-技术
-
-版本
-
-用途
-
-**语言**
-
-TypeScript
-
-5.0+
-
-类型安全的前端逻辑
-
-**构建**
-
-TypeScript Compiler
-
-5.0+
-
-TS → JS 编译
-
-**开发服务器**
-
-serve
-
-14.2.0
-
-静态文件服务
-
-**样式方案**
-
-CSS 自定义属性
-
--
-
-设计系统与五主题切换
-
-**字体**
-
-Plus Jakarta Sans
-
--
-
-Google Fonts 现代无衬线体
-
-**国际化**
-
-自研 i18n
-
--
-
-纯 TypeScript 运行时翻译
+---
 
 ### 外部服务
 
-服务
-
-用途
-
-协议
-
-**OpenAI / DeepSeek API**
-
-LLM 推理（文本 + JSON 模式）
-
-REST (OpenAI 兼容)
-
-**Wikipedia API**
-
-多语言百科搜索
-
-REST (MediaWiki)
-
-**arXiv API**
-
-学术论文检索
-
-REST (Atom XML)
-
-**DuckDuckGo HTML**
-
-通用网页搜索
-
-HTML 解析
-
-**Wikimedia Commons API**
-
-CC 许可图片检索
-
-REST (MediaWiki)
-
+| 服务 | 用途 | 协议 |
+|------|------|------|
+| **OpenAI / DeepSeek API** | LLM 推理（文本生成 + JSON 模式） | REST（OpenAI Compatible API） |
+| **Wikipedia API** | 多语言百科知识检索 | REST（MediaWiki API） |
+| **arXiv API** | 学术论文检索 | REST（Atom XML） |
+| **DuckDuckGo HTML** | 通用网页搜索 | HTML 解析 |
+| **Wikimedia Commons API** | CC 协议图片检索 | REST（MediaWiki API） |
 ---
 
 ## 🏗️ 系统架构
@@ -403,34 +192,12 @@ REST (MediaWiki)
 
 ### 架构设计原则
 
-原则
-
-说明
-
-**分层解耦**
-
-API 层 → Service 层 → Agent/Orchestrator 层 → Tools 层，每层职责清晰
-
-**依赖注入**
-
-FastAPI `Depends()` 实现数据库会话、用户认证的依赖注入
-
-**配置外置**
-
-三级配置回退链（DB → .env → 默认值），环境无关
-
-**异步优先**
-
-全链路 `async/await`，数据库、HTTP、LLM 调用均为异步
-
-**优雅降级**
-
-ImageAgent 失败不影响报告主体，搜索源不可用时自动跳过
-
-**状态可观测**
-
-任务状态枚举（7 种状态）、进度百分比（0.0-1.0）、中间报告持久化
-
+| 设计原则 | 描述 |
+|----------|------|
+| **分层架构（Layered Architecture）** | 系统采用 **API → Service → Agent / Orchestrator → Tools** 四层架构，实现职责分离与模块解耦。 |
+| **依赖注入（Dependency Injection）** | 基于 FastAPI `Depends()` 管理数据库会话、认证信息及其他共享依赖，提高代码可测试性和可维护性。 |
+| **配置中心（Configuration Management）** | 配置遵循 **数据库 → `.env` → 默认值** 的三级回退策略，支持多环境部署与个性化配置。 |
+| **状态可观测（Observability）** | 研究任务提供完整生命周期状态、实时进度、阶段性摘要及中间报告持久化，便于监控与恢复。 |
 ---
 
 ## 📐 核心设计
@@ -509,332 +276,109 @@ users (用户)
   ├── 1:N ── knowledge_nodes (知识节点)
   └── 1:1 ── user_settings (用户 API 配置)
 ```
-
 ### 数据模型详解
 
-#### User（用户表）
-
-字段
-
-类型
-
-说明
-
-id
-
-UUID (PK)
-
-用户主键
-
-username
-
-VARCHAR(50), UNIQUE
-
-用户名
-
-email
-
-VARCHAR(120), UNIQUE
-
-邮箱
-
-hashed_password
-
-VARCHAR(255)
-
-bcrypt 哈希密码
-
-full_name
-
-VARCHAR(100)
-
-姓名
-
-role
-
-ENUM(admin, researcher, user)
-
-角色
-
-is_active
-
-BOOLEAN
-
-是否激活
-
-avatar_url
-
-VARCHAR(500)
-
-头像 URL
-
-#### ResearchTask（研究任务表）
-
-字段
-
-类型
-
-说明
-
-id
-
-UUID (PK)
-
-任务主键
-
-user_id
-
-FK → users
-
-所属用户
-
-title
-
-VARCHAR(300)
-
-任务标题
-
-topic
-
-TEXT
-
-研究主题
-
-description
-
-TEXT
-
-补充说明
-
-status
-
-ENUM(7 种状态)
-
-当前阶段
-
-progress
-
-FLOAT (0.0-1.0)
-
-完成进度
-
-queries
-
-JSON
-
-分解后的搜索查询
-
-search_results
-
-JSON
-
-收集的搜索结果（最多 50 条）
-
-knowledge_gaps
-
-JSON
-
-识别的知识空白（最多 20 条）
-
-summary
-
-TEXT
-
-阶段性综合摘要
-
-final_report
-
-TEXT
-
-最终 Markdown 报告
-
-report_path
-
-VARCHAR(500)
-
-报告文件路径
-
-metadata_json
-
-JSON
-
-元数据（错误信息、模型参数等）
-
-created_at
-
-DATETIME
-
-创建时间
-
-updated_at
-
-DATETIME
-
-更新时间
-
-completed_at
-
-DATETIME
-
-完成时间
-
-**任务状态枚举（TaskStatus）：**
-
-```
-待处理 → 主题分解 → 搜索中 → 内容总结 → 报告生成 → 完成
-                                                  ↘ 失败 (可取消)
+## User（用户表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID (PK) | 用户主键 |
+| `username` | VARCHAR(50), UNIQUE | 用户名 |
+| `email` | VARCHAR(120), UNIQUE | 邮箱 |
+| `hashed_password` | VARCHAR(255) | bcrypt 哈希密码 |
+| `full_name` | VARCHAR(100) | 姓名 |
+| `role` | ENUM(`admin`, `researcher`, `user`) | 用户角色 |
+| `is_active` | BOOLEAN | 是否激活 |
+| `avatar_url` | VARCHAR(500) | 头像 URL |
+
+---
+
+## ResearchTask（研究任务表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID (PK) | 任务主键 |
+| `user_id` | FK → `users` | 所属用户 |
+| `title` | VARCHAR(300) | 任务标题 |
+| `topic` | TEXT | 研究主题 |
+| `description` | TEXT | 补充说明 |
+| `status` | ENUM（7 种状态） | 当前阶段 |
+| `progress` | FLOAT (0.0–1.0) | 完成进度 |
+| `queries` | JSON | 分解后的搜索查询 |
+| `search_results` | JSON | 收集的搜索结果（最多 50 条） |
+| `knowledge_gaps` | JSON | 识别的知识空白（最多 20 条） |
+| `summary` | TEXT | 阶段性综合摘要 |
+| `final_report` | TEXT | 最终 Markdown 报告 |
+| `report_path` | VARCHAR(500) | 报告文件路径 |
+| `metadata_json` | JSON | 元数据（错误信息、模型参数等） |
+| `created_at` | DATETIME | 创建时间 |
+| `updated_at` | DATETIME | 更新时间 |
+| `completed_at` | DATETIME | 完成时间 |
+
+### 任务状态（TaskStatus）
+
+```text
+待处理
+   │
+   ▼
+主题分解
+   │
+   ▼
+搜索中
+   │
+   ▼
+内容总结
+   │
+   ▼
+报告生成
+   │
+   ▼
+完成
+
+└────────────► 失败（可取消）
 ```
 
-#### Article（文章表）
-
-字段
-
-类型
-
-说明
-
-id
-
-UUID (PK)
-
-文章主键
-
-user_id
-
-FK → users
-
-所属用户
-
-title
-
-VARCHAR(300)
-
-文章标题
-
-content
-
-TEXT
-
-Markdown 正文
-
-abstract
-
-TEXT
-
-摘要
-
-keywords
-
-JSON
-
-关键词数组
-
-status
-
-ENUM(draft, published, archived)
-
-发布状态
-
-source_url
-
-VARCHAR(500)
-
-来源 URL
-
-source_type
-
-VARCHAR(50)
-
-来源类型
-
-#### KnowledgeNode（知识节点表）
-
-字段
-
-类型
-
-说明
-
-id
-
-UUID (PK)
-
-节点主键
-
-user_id
-
-FK → users
-
-所属用户
-
-task_id
-
-FK → research_tasks (nullable)
-
-来源任务
-
-title
-
-VARCHAR(300)
-
-节点标题
-
-content
-
-TEXT
-
-节点内容
-
-node_type
-
-VARCHAR(50)
-
-类型 (concept / fact / reference / gap)
-
-confidence
-
-VARCHAR(10)
-
-置信度 (0.0-1.0)
-
-#### UserSettings（用户 API 配置表）
-
-字段
-
-类型
-
-说明
-
-id
-
-UUID (PK)
-
-主键
-
-user_id
-
-FK → users, UNIQUE
-
-所属用户
-
-openai_api_key
-
-TEXT
-
-用户自定义 API Key
-
-openai_base_url
-
-VARCHAR(500)
-
-自定义 Base URL
-
-openai_model
-
-VARCHAR(100)
-
-自定义模型名
-
+---
+
+## Article（文章表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID (PK) | 文章主键 |
+| `user_id` | FK → `users` | 所属用户 |
+| `title` | VARCHAR(300) | 文章标题 |
+| `content` | TEXT | Markdown 正文 |
+| `abstract` | TEXT | 摘要 |
+| `keywords` | JSON | 关键词数组 |
+| `status` | ENUM(`draft`, `published`, `archived`) | 发布状态 |
+| `source_url` | VARCHAR(500) | 来源 URL |
+| `source_type` | VARCHAR(50) | 来源类型 |
+
+---
+
+## KnowledgeNode（知识节点表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID (PK) | 节点主键 |
+| `user_id` | FK → `users` | 所属用户 |
+| `task_id` | FK → `research_tasks`（nullable） | 来源研究任务 |
+| `title` | VARCHAR(300) | 节点标题 |
+| `content` | TEXT | 节点内容 |
+| `node_type` | VARCHAR(50) | 节点类型（`concept` / `fact` / `reference` / `gap`） |
+| `confidence` | FLOAT (0.0–1.0) | 置信度 |
+
+---
+
+## UserSettings（用户 API 配置表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | UUID (PK) | 主键 |
+| `user_id` | FK → `users`，UNIQUE | 所属用户 |
+| `openai_api_key` | TEXT | 用户自定义 API Key |
+| `openai_base_url` | VARCHAR(500) | 自定义 Base URL |
+| `openai_model` | VARCHAR(100) | 自定义模型名称 |
 ---
 
 ## 🔬 研究流水线详解
@@ -940,103 +484,14 @@ VARCHAR(100)
 
 ### Agent 矩阵
 
-#
-
-Agent
-
-职责
-
-输入
-
-输出
-
-LLM 模式
-
-Temperature
-
-1
-
-**DecompositionAgent**
-
-主题分解为子问题与搜索查询
-
-研究主题 + 描述
-
-JSON: sub_questions → queries[] + key_concepts[]
-
-JSON
-
-0.2
-
-2
-
-**SearchAgent**
-
-跨源搜索 + 信息充分性评估
-
-查询列表 + 已有结果
-
-搜索结果 + 知识空白评估
-
-JSON (评估)
-
-0.2
-
-3
-
-**SummarizationAgent**
-
-搜索结果综合与知识节点提取
-
-本论结果 + 所有轮次
-
-逐轮摘要 + 最终综合报告
-
-JSON + Text
-
-0.2 / 0.3
-
-4
-
-**TodoPlannerAgent**
-
-生成 + 自评估研究待办计划
-
-主题 + 摘要 + 知识空白
-
-分阶段 TODO 计划
-
-JSON
-
-0.2
-
-5
-
-**ReportAgent**
-
-结构化 Markdown 学术报告
-
-主题 + 摘要 + 来源 + 节点
-
-Markdown 报告
-
-Text
-
-0.4
-
-6
-
-**ImageAgent**
-
-源材料图片分析 + CC 图片检索嵌入
-
-报告 + 源材料
-
-图片位置 + Markdown 嵌入
-
-JSON
-
-0.2
+| # | Agent | 职责 | 输入 | 输出 | LLM 模式 | Temperature |
+|---|-------|------|------|------|----------|-------------:|
+| 1 | **DecompositionAgent** | 将研究主题分解为子问题与搜索查询 | 研究主题 + 描述 | `sub_questions[]`、`queries[]`、`key_concepts[]` | JSON | 0.2 |
+| 2 | **SearchAgent** | 跨数据源搜索并评估信息充分性 | 查询列表 + 已有结果 | 搜索结果 + 知识空白评估 | JSON（评估） | 0.2 |
+| 3 | **SummarizationAgent** | 综合搜索结果并提取知识节点 | 本轮结果 + 所有轮次结果 | 逐轮摘要 + 最终综合报告 | JSON + Text | 0.2 / 0.3 |
+| 4 | **TodoPlannerAgent** | 生成并自评估研究 TODO 计划 | 主题 + 摘要 + 知识空白 | 分阶段 TODO 计划 | JSON | 0.2 |
+| 5 | **ReportAgent** | 生成结构化 Markdown 学术报告 | 主题 + 摘要 + 来源 + 知识节点 | Markdown 报告 | Text | 0.4 |
+| 6 | **ImageAgent** | 分析源材料图片并检索 CC 图片嵌入报告 | 报告 + 源材料 | 图片位置 + Markdown 嵌入 | JSON | 0.2 |
 
 ### Prompts 设计
 
@@ -1071,45 +526,6 @@ JSON
 ├── 过渡 (fast: 150ms, base: 250ms, smooth: 350ms)
 └── 渐变 (subtle, hero)
 ```
-
-### 五种主题
-
-主题
-
-主色调
-
-风格
-
-Dark Blue (默认)
-
-`#5b7cf8` 蓝色
-
-科技感深色
-
-Light
-
-`#4f6ef7` 蓝色
-
-清爽亮色
-
-Emerald
-
-`#10b981` 翠绿
-
-护眼自然
-
-Sunset
-
-`#f59e0b` 琥珀
-
-温暖活力
-
-Purple
-
-`#a78bfa` 紫色
-
-优雅神秘
-
 ### 前端技术特点
 
 -   **零框架依赖**：纯 TypeScript + CSS 构建，无 React/Vue 依赖
@@ -1248,349 +664,85 @@ npm run dev    # 编译 TypeScript + 启动开发服务器 (端口 3000)
 6.  在任务列表页查看进度，完成后点击查看完整报告
 
 ---
-
 ## ⚙️ 配置指南
 
 ### 环境变量参考
 
-变量
-
-默认值
-
-说明
-
-`APP_NAME`
-
-Deep Research Agent System
-
-应用名称
-
-`APP_VERSION`
-
-1.0.0
-
-版本号
-
-`DEBUG`
-
-true
-
-调试模式（开启 SQL 日志）
-
-`DATABASE_URL`
-
-sqlite+aiosqlite:///./research.db
-
-数据库连接 URL
-
-`JWT_SECRET_KEY`
-
-(需修改)
-
-JWT 签名密钥（生产环境务必修改）
-
-`JWT_ALGORITHM`
-
-HS256
-
-JWT 签名算法
-
-`JWT_EXPIRE_MINUTES`
-
-1440 (24h)
-
-Token 有效期
-
-`OPENAI_API_KEY`
-
-(必填)
-
-LLM API 密钥
-
-`OPENAI_BASE_URL`
-
-[https://api.deepseek.com](https://api.deepseek.com)
-
-API 基础 URL
-
-`OPENAI_MODEL`
-
-deepseek-v4-flash
-
-模型名称
-
-`WIKIPEDIA_LANG`
-
-zh
-
-Wikipedia 搜索语言
-
-`ARXIV_MAX_RESULTS`
-
-20
-
-arXiv 最大返回结果数
-
-`CORS_ORIGINS`
-
-["*"]
-
-允许的跨域来源
-
-`UPLOAD_DIR`
-
-./uploads
-
-上传文件目录
-
-`REPORT_DIR`
-
-./reports
-
-报告存储目录
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `APP_NAME` | `Deep Research Agent System` | 应用名称 |
+| `APP_VERSION` | `1.0.0` | 版本号 |
+| `DEBUG` | `true` | 调试模式（开启 SQL 日志） |
+| `DATABASE_URL` | `sqlite+aiosqlite:///./research.db` | 数据库连接 URL |
+| `JWT_SECRET_KEY` | **(需修改)** | JWT 签名密钥（生产环境务必修改） |
+| `JWT_ALGORITHM` | `HS256` | JWT 签名算法 |
+| `JWT_EXPIRE_MINUTES` | `1440 (24h)` | Token 有效期 |
+| `OPENAI_API_KEY` | **(必填)** | LLM API 密钥 |
+| `OPENAI_BASE_URL` | `https://api.deepseek.com` | API 基础 URL |
+| `OPENAI_MODEL` | `deepseek-v4-flash` | 模型名称 |
+| `WIKIPEDIA_LANG` | `zh` | Wikipedia 搜索语言 |
+| `ARXIV_MAX_RESULTS` | `20` | arXiv 最大返回结果数 |
+| `CORS_ORIGINS` | `["*"]` | 允许的跨域来源 |
+| `UPLOAD_DIR` | `./uploads` | 上传文件目录 |
+| `REPORT_DIR` | `./reports` | 报告存储目录 |
 
 ### 支持的大模型服务商
 
-服务商
-
-Base URL
-
-推荐模型
-
-DeepSeek
-
-`https://api.deepseek.com`
-
-`deepseek-chat` / `deepseek-v4-flash`
-
-OpenAI
-
-`https://api.openai.com/v1`
-
-`gpt-4o` / `gpt-4o-mini`
-
-硅基流动
-
-`https://api.siliconflow.cn/v1`
-
-`deepseek-ai/DeepSeek-V3`
-
-阿里百炼
-
-`https://dashscope.aliyuncs.com/compatible-mode/v1`
-
-`qwen-plus`
-
-其他兼容服务
-
-自定义
-
-按服务商文档填写
+| 服务商 | Base URL | 推荐模型 |
+|--------|----------|----------|
+| DeepSeek | `https://api.deepseek.com` | `deepseek-chat` / `deepseek-v4-flash` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o` / `gpt-4o-mini` |
+| 硅基流动 | `https://api.siliconflow.cn/v1` | `deepseek-ai/DeepSeek-V3` |
+| 阿里百炼 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
+| 其他兼容服务 | 自定义 | 按服务商文档填写 |
 
 ---
 
-## 📡 API 文档
-
-### 认证接口
-
-方法
-
-路径
-
-认证
-
-说明
-
-POST
-
-`/api/auth/register`
-
-❌
-
-用户注册
-
-POST
-
-`/api/auth/login`
-
-❌
-
-用户登录（返回 JWT）
-
-### 用户接口
-
-方法
-
-路径
-
-认证
-
-说明
-
-GET
-
-`/api/users/me`
-
-✅
-
-获取当前用户信息
-
-PUT
-
-`/api/users/me`
-
-✅
-
-更新当前用户信息
-
-### 研究任务接口
-
-方法
-
-路径
-
-认证
-
-说明
-
-POST
-
-`/api/research/`
-
-✅
-
-创建研究任务
-
-GET
-
-`/api/research/`
-
-✅
-
-获取任务列表（支持 `skip`, `limit`）
-
-GET
-
-`/api/research/{id}`
-
-✅
-
-获取任务详情（含中间报告、待办事项）
-
-POST
-
-`/api/research/{id}/run`
-
-✅
-
-启动研究（后台异步执行）
-
-POST
-
-`/api/research/{id}/cancel`
-
-✅
-
-取消正在运行的研究
-
-DELETE
-
-`/api/research/{id}`
-
-✅
-
-删除研究任务
-
-PUT
-
-`/api/research/{id}/todos/{todo_id}`
-
-✅
-
-更新待办完成状态
-
-### 文章接口
-
-方法
-
-路径
-
-认证
-
-说明
-
-POST
-
-`/api/articles/`
-
-✅
-
-创建文章
-
-GET
-
-`/api/articles/`
-
-✅
-
-获取文章列表
-
-GET
-
-`/api/articles/{id}`
-
-✅
-
-获取文章详情
-
-PUT
-
-`/api/articles/{id}`
-
-✅
-
-更新文章
-
-DELETE
-
-`/api/articles/{id}`
-
-✅
-
-删除文章
-
-GET
-
-`/api/articles/knowledge-nodes`
-
-✅
-
-获取知识节点列表
-
-POST
-
-`/api/articles/knowledge-nodes`
-
-✅
-
-创建知识节点
-
-### AI 接口
-
-方法
-
-路径
-
-认证
-
-说明
-
-POST
-
-`/api/ai/parse-input`
-
-✅
-
+# 📡 API 文档
+
+## 认证接口
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| POST | `/api/auth/register` | ❌ | 用户注册 |
+| POST | `/api/auth/login` | ❌ | 用户登录（返回 JWT） |
+
+## 用户接口
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| GET | `/api/users/me` | ✅ | 获取当前用户信息 |
+| PUT | `/api/users/me` | ✅ | 更新当前用户信息 |
+
+## 研究任务接口
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| POST | `/api/research/` | ✅ | 创建研究任务 |
+| GET | `/api/research/` | ✅ | 获取任务列表（支持 `skip`、`limit`） |
+| GET | `/api/research/{id}` | ✅ | 获取任务详情（含中间报告、待办事项） |
+| POST | `/api/research/{id}/run` | ✅ | 启动研究（后台异步执行） |
+| POST | `/api/research/{id}/cancel` | ✅ | 取消正在运行的研究 |
+| DELETE | `/api/research/{id}` | ✅ | 删除研究任务 |
+| PUT | `/api/research/{id}/todos/{todo_id}` | ✅ | 更新待办完成状态 |
+
+## 文章接口
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| POST | `/api/articles/` | ✅ | 创建文章 |
+| GET | `/api/articles/` | ✅ | 获取文章列表 |
+| GET | `/api/articles/{id}` | ✅ | 获取文章详情 |
+| PUT | `/api/articles/{id}` | ✅ | 更新文章 |
+| DELETE | `/api/articles/{id}` | ✅ | 删除文章 |
+| GET | `/api/articles/knowledge-nodes` | ✅ | 获取知识节点列表 |
+| POST | `/api/articles/knowledge-nodes` | ✅ | 创建知识节点 |
+
+## AI 接口
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| POST | `/api/ai/parse-input` | ✅ | 解析用户输入 |
 自然语言意图解析
 
 **请求示例：**
@@ -1615,58 +767,14 @@ POST
 }
 ```
 
-### 设置接口
+## API 接口
 
-方法
-
-路径
-
-认证
-
-说明
-
-GET
-
-`/api/settings`
-
-✅
-
-获取用户 API 配置
-
-PUT
-
-`/api/settings`
-
-✅
-
-更新用户 API 配置
-
-POST
-
-`/api/settings/test`
-
-✅
-
-测试 API 连接
-
-### 健康检查
-
-方法
-
-路径
-
-认证
-
-说明
-
-GET
-
-`/api/health`
-
-❌
-
-服务健康检查
-
+| 分类 | 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|------|
+| 设置接口 | GET | `/api/settings` | ✅ | 获取用户 API 配置 |
+| 设置接口 | PUT | `/api/settings` | ✅ | 更新用户 API 配置 |
+| 设置接口 | POST | `/api/settings/test` | ✅ | 测试 API 连接 |
+| 健康检查 | GET | `/api/health` | ❌ | 服务健康检查 |
 ---
 
 ## 🎯 使用场景
@@ -1783,51 +891,3 @@ lanshan-project/
 ├── .gitignore
 └── README.md                       # 本文档
 ```
-
----
-
-## 🗺️ 开发路线图
-
-### 已完成 ✅
-
--    多 Agent 流水线协作（6 Agent）
--    多源搜索聚合（Wikipedia + arXiv + DuckDuckGo）
--    多轮迭代研究（自适应终止）
--    JWT 多用户认证 + 角色管理
--    用户级 API 配置（三级回退链）
--    结构化 Markdown 报告生成
--    自然语言意图解析
--    知识节点提取与图谱展示
--    报告图像智能增强（CC 许可图片）
--    待办计划自评估与修正
--    五主题设计系统
--    中英文国际化
--    鲁棒 JSON 处理（三层容错）
--    任务取消机制
--    Swagger API 自动文档
--    响应式前端布局
-
-### 规划中 🔮
-
--    **流式输出 (SSE)**：研究进度实时推送，替代前端轮询
--    **LangGraph 状态图**：将线性流水线升级为状态图驱动的 Agent 工作流
--    **Agent 工具调用**：让 SearchAgent 自主决策调用哪个搜索源
--    **PDF 报告导出**：Markdown → PDF 转换（LaTeX 模板）
--    **引用管理**：BibTeX 格式引用导出
--    **协作研究**：多人协同编辑研究任务
--    **研究历史对比**：不同时间点研究结果的 diff 视图
--    **自定义 Agent 模板**：用户可配置 Agent 的 System Prompt
--    **搜索结果缓存**：减少重复 API 调用，加速重复研究
--    **Docker 一键部署**：`docker-compose up` 即可启动
--    **PostgreSQL 支持**：生产环境数据库切换
--    **前端框架迁移**：考虑 React/Vue 重写以支持更复杂的交互
-
----
-
-## 📄 许可证
-
-MIT License
-
----
-
-> Built with ❤️ using FastAPI, LangChain, and TypeScript
