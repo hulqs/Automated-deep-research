@@ -597,9 +597,9 @@ cd backend
 python -m venv venv
 
 # CMD:
-venvScriptsactivate
+venv\Scripts\activate
 # PowerShell:
-.venvScriptsActivate.ps1
+.venv\Scripts\Activate.ps1
 # Git Bash:
 source venv/Scripts/activate
 
