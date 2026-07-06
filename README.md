@@ -604,6 +604,7 @@ OPENAI_API_KEY=sk-your-api-key
 OPENAI_BASE_URL=https://api.deepseek.com
 OPENAI_MODEL=deepseek-chat
 "@ | Out-File -FilePath .env -Encoding utf8
+#或者直接打开backend\.env文件填写api_key和url
 
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
