@@ -370,17 +370,6 @@ users (用户)
 
 ---
 
-## UserSettings（用户 API 配置表）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `id` | UUID (PK) | 主键 |
-| `user_id` | FK → `users`，UNIQUE | 所属用户 |
-| `openai_api_key` | TEXT | 用户自定义 API Key |
-| `openai_base_url` | VARCHAR(500) | 自定义 Base URL |
-| `openai_model` | VARCHAR(100) | 自定义模型名称 |
----
-
 ## 🔬 研究流水线详解
 
 ```
@@ -658,7 +647,6 @@ npm run dev    # 编译 TypeScript + 启动开发服务器 (端口 3000)
 
 1.  打开浏览器访问 `http://localhost:3000`
 2.  注册账号并登录
-3.  （可选）进入 Settings 页面配置自己的 API Key
 4.  在仪表盘输入研究主题，例如：「量子计算在人工智能中的应用现状」
 5.  系统自动分析意图并启动研究任务
 6.  在任务列表页查看进度，完成后点击查看完整报告
@@ -766,16 +754,6 @@ npm run dev    # 编译 TypeScript + 启动开发服务器 (端口 3000)
   "explanation": "正在创建关于量子计算与AI交叉领域的研究任务"
 }
 ```
-
-## API 接口
-
-| 分类 | 方法 | 路径 | 认证 | 说明 |
-|------|------|------|------|------|
-| 设置接口 | GET | `/api/settings` | ✅ | 获取用户 API 配置 |
-| 设置接口 | PUT | `/api/settings` | ✅ | 更新用户 API 配置 |
-| 设置接口 | POST | `/api/settings/test` | ✅ | 测试 API 连接 |
-| 健康检查 | GET | `/api/health` | ❌ | 服务健康检查 |
----
 
 ## 🎯 使用场景
 
@@ -887,7 +865,5 @@ lanshan-project/
 │   ├── app.js.map                  # Source Map
 │   └── node_modules/               # 开发依赖
 │
-├── .claude/                        # Claude Code 配置
-├── .gitignore
 └── README.md                       # 本文档
 ```
