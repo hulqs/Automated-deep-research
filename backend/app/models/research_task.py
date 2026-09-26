@@ -13,6 +13,7 @@ class TaskStatus(str, enum.Enum):
     GENERATING = "报告生成"
     COMPLETED = "完成"
     FAILED = "失败"
+    CANCELLED = "已终止"
 
 class ResearchTask(Base):
     __tablename__ = "research_tasks"

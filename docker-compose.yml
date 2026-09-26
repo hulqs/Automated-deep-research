@@ -1,0 +1,38 @@
+# Deep Research Agent System — docker compose
+#
+#   1) 准备环境变量（同目录新建 .env）：
+#        OPENAI_API_KEY=sk-xxxx
+#        OPENAI_BASE_URL=https://api.deepseek.com
+#        OPENAI_MODEL=deepseek-v4-flash
+#        JWT_SECRET_KEY=<32位以上随机串>
+#   2) docker compose up -d --build
+#   3) 前端 http://localhost:3000    API 文档 http://localhost:8000/docs
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: deep-search-agent:latest
+    container_name: deep-search-agent
+    ports:
+      - "3000:3000"   # 前端
+      - "8000:8000"   # 后端 API (/docs 可看 Swagger)
+    environment:
+      # 全局默认 LLM 配置；用户也可在前端 Settings 页按账号单独覆盖
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_BASE_URL: "${OPENAI_BASE_URL:-https://api.deepseek.com}"
+      OPENAI_MODEL: "${OPENAI_MODEL:-deepseek-v4-flash}"
+      # 生产环境务必改成强随机串：openssl rand -hex 32
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-change-me-in-production}"
+      JWT_EXPIRE_MINUTES: "${JWT_EXPIRE_MINUTES:-1440}"
+      DEBUG: "${DEBUG:-false}"
+      CORS_ORIGINS: '["*"]'
+      # 数据库落在挂载卷里，容器重建不丢数据
+      DATABASE_URL: "sqlite+aiosqlite:////app/backend/data/research.db"
+    volumes:
+      - ds-data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  ds-data:

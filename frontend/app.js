@@ -32,6 +32,11 @@ const I18N = {
         "auth.loginFailed": "登录失败",
         "auth.registerFailed": "注册失败",
         "auth.connectionError": "连接错误: {msg}",
+        "auth.usernameTooShort": "用户名至少需要3个字符",
+        "auth.usernameInvalidChars": "用户名只能包含字母、数字、下划线或中文",
+        "auth.emailInvalid": "请输入有效的邮箱地址",
+        "auth.passwordTooShort": "密码至少需要6个字符",
+        "auth.fullNameTooLong": "姓名不能超过100个字符",
         // Dashboard
         "dashboard.title": "仪表盘",
         "dashboard.welcome": "欢迎回来，{name}",
@@ -71,6 +76,8 @@ const I18N = {
         "tasks.researchInProgress": "研究进行中...",
         "tasks.researchFailed": "研究失败",
         "tasks.researchFailedDesc": "研究过程中发生了错误，请重试或检查你的 API 配置。",
+        "tasks.researchCancelled": "研究已终止",
+        "tasks.researchCancelledDesc": "该研究任务已被手动终止。",
         "tasks.cancelResearch": "终止研究",
         "tasks.confirmCancel": "确定终止这个研究任务？",
         "tasks.retry": "重新研究",
@@ -141,6 +148,11 @@ const I18N = {
         "auth.loginFailed": "Login failed",
         "auth.registerFailed": "Registration failed",
         "auth.connectionError": "Connection error: {msg}",
+        "auth.usernameTooShort": "Username must be at least 3 characters",
+        "auth.usernameInvalidChars": "Username can only contain letters, numbers, underscores or Chinese characters",
+        "auth.emailInvalid": "Please enter a valid email address",
+        "auth.passwordTooShort": "Password must be at least 6 characters",
+        "auth.fullNameTooLong": "Name cannot exceed 100 characters",
         // Dashboard
         "dashboard.title": "Dashboard",
         "dashboard.welcome": "Welcome back, {name}",
@@ -180,6 +192,8 @@ const I18N = {
         "tasks.researchInProgress": "Research in progress...",
         "tasks.researchFailed": "Research Failed",
         "tasks.researchFailedDesc": "An error occurred during research. Please retry or check your API configuration.",
+        "tasks.researchCancelled": "Research Terminated",
+        "tasks.researchCancelledDesc": "This research task has been manually terminated.",
         "tasks.cancelResearch": "Cancel Research",
         "tasks.confirmCancel": "Are you sure you want to cancel this research?",
         "tasks.retry": "Retry Research",
@@ -311,21 +325,111 @@ function showErr(id, msg) {
     el.textContent = msg;
     el.style.display = "block";
 }
+function showFieldError(fieldId, groupId, msg) {
+    const fieldEl = document.getElementById(fieldId);
+    const groupEl = document.getElementById(groupId);
+    fieldEl.textContent = msg;
+    fieldEl.classList.add("show");
+    groupEl.classList.add("has-error");
+}
+function clearFieldError(fieldId, groupId) {
+    const fieldEl = document.getElementById(fieldId);
+    const groupEl = document.getElementById(groupId);
+    fieldEl.textContent = "";
+    fieldEl.classList.remove("show");
+    groupEl.classList.remove("has-error");
+}
+function clearAllErrors(formPrefix, fieldNames) {
+    // Clear banner
+    const banner = document.getElementById(formPrefix + "Error");
+    if (banner) {
+        banner.textContent = "";
+        banner.style.display = "none";
+    }
+    // Clear per-field errors
+    for (const name of fieldNames) {
+        clearFieldError(formPrefix + name + "Error", formPrefix + name + "Group");
+    }
+    // Also remove has-error from any other groups
+    document.querySelectorAll(".form-group.has-error").forEach((el) => {
+        el.classList.remove("has-error");
+    });
+}
+/**
+ * Parse API error response — handles both FastAPI 422 (array detail) and
+ * regular errors (string detail). Returns a human-readable message.
+ */
+async function parseApiError(r) {
+    try {
+        const body = await r.json();
+        // FastAPI 422: detail is an array of {loc, msg, type} objects
+        if (Array.isArray(body.detail)) {
+            return body.detail.map((e) => {
+                const field = e.loc[e.loc.length - 1];
+                return `${field}: ${e.msg}`;
+            }).join("; ");
+        }
+        // Regular error: detail is a string
+        if (typeof body.detail === "string")
+            return body.detail;
+        // Fallback: unknown format
+        return JSON.stringify(body.detail || body);
+    }
+    catch {
+        return `HTTP ${r.status}`;
+    }
+}
+// ====== Client-Side Validation ======
+const USERNAME_RE = /^[\w一-鿿㐀-䶿-]{3,50}$/;
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+function validateRegisterFields(username, email, password, full_name, prefix) {
+    let valid = true;
+    if (username.length < 3) {
+        showFieldError(prefix + "UserError", prefix + "UserGroup", t("auth.usernameTooShort"));
+        valid = false;
+    }
+    else if (!USERNAME_RE.test(username)) {
+        showFieldError(prefix + "UserError", prefix + "UserGroup", t("auth.usernameInvalidChars"));
+        valid = false;
+    }
+    if (!EMAIL_RE.test(email)) {
+        showFieldError(prefix + "EmailError", prefix + "EmailGroup", t("auth.emailInvalid"));
+        valid = false;
+    }
+    if (password.length < 6) {
+        showFieldError(prefix + "PassError", prefix + "PassGroup", t("auth.passwordTooShort"));
+        valid = false;
+    }
+    if (full_name.length > 100) {
+        showFieldError(prefix + "NameError", prefix + "NameGroup", t("auth.fullNameTooLong"));
+        valid = false;
+    }
+    return valid;
+}
 async function doLogin() {
-    document.getElementById("loginError").style.display = "none";
+    clearAllErrors("login", ["User", "Pass"]);
     const username = document.getElementById("loginUser").value.trim();
     const password = document.getElementById("loginPass").value;
-    if (!username || !password)
-        return showErr("loginError", t("auth.fillAllFields"));
+    // Client-side validation
+    if (!username) {
+        showFieldError("loginUserError", "loginUserGroup", t("auth.fillAllFields"));
+        return;
+    }
+    if (!password) {
+        showFieldError("loginPassError", "loginPassGroup", t("auth.fillAllFields"));
+        return;
+    }
     try {
         const r = await fetch(`${API}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
         });
+        if (!r.ok) {
+            const errMsg = await parseApiError(r);
+            return showErr("loginError", errMsg || t("auth.loginFailed"));
+        }
         const d = await r.json();
-        if (!r.ok)
-            return showErr("loginError", d.detail || t("auth.loginFailed"));
         token = d.access_token;
         user = d.user;
         localStorage.setItem("token", token);
@@ -337,22 +441,37 @@ async function doLogin() {
     }
 }
 async function doRegister() {
-    document.getElementById("regError").style.display = "none";
+    clearAllErrors("reg", ["User", "Email", "Name", "Pass"]);
     const username = document.getElementById("regUser").value.trim();
     const email = document.getElementById("regEmail").value.trim();
     const full_name = document.getElementById("regName").value.trim();
     const password = document.getElementById("regPass").value;
+    // Check required fields
+    if (!username) {
+        showFieldError("regUserError", "regUserGroup", t("auth.fillRequired"));
+    }
+    if (!email) {
+        showFieldError("regEmailError", "regEmailGroup", t("auth.fillRequired"));
+    }
+    if (!password) {
+        showFieldError("regPassError", "regPassGroup", t("auth.fillRequired"));
+    }
     if (!username || !email || !password)
-        return showErr("regError", t("auth.fillRequired"));
+        return;
+    // Format validation
+    if (!validateRegisterFields(username, email, password, full_name, "reg"))
+        return;
     try {
         const r = await fetch(`${API}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, full_name, password }),
         });
+        if (!r.ok) {
+            const errMsg = await parseApiError(r);
+            return showErr("regError", errMsg || t("auth.registerFailed"));
+        }
         const d = await r.json();
-        if (!r.ok)
-            return showErr("regError", d.detail || t("auth.registerFailed"));
         token = d.access_token;
         user = d.user;
         localStorage.setItem("token", token);
@@ -391,6 +510,8 @@ function doLogout() {
     document.getElementById("appLayout").classList.add("hidden");
 }
 function showPage(page) {
+    // Clean up any active SSE connection before navigating away
+    disconnectSSE();
     currentPage = page;
     localStorage.setItem("currentPage", page);
     document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
@@ -439,8 +560,8 @@ async function renderDashboard(mc) {
         const articles = await articlesR.json();
         const taskList = tasksData.tasks || tasksData || [];
         const total = taskList.length;
-        const completed = taskList.filter((t) => t.status === "completed").length;
-        const running = taskList.filter((t) => t.status !== "completed" && t.status !== "failed").length;
+        const completed = taskList.filter((t) => t.status === "完成").length;
+        const running = taskList.filter((t) => t.status !== "完成" && t.status !== "失败" && t.status !== "已终止").length;
         mc.innerHTML =
             `<div class="page-header"><h1>${t("dashboard.title")}</h1><p>${t("dashboard.welcome", { name: esc(user.full_name || user.username) })}</p></div>` +
                 `<div class="stats-grid">` +
@@ -489,12 +610,9 @@ async function handleQuickInputGeneric(inputId, btnId, btnRestoreText, showAlert
                 body: JSON.stringify(payload),
             });
             const task = await taskR.json();
-            await api(`/research/${task.id}/run`, { method: "POST" });
-            showPage("tasks");
             input.value = "";
-            if (showAlerts) {
-                setTimeout(() => alert(`${t("tasks.researchStartedWithTitle", { title: task.title })}\n${result.explanation}`), 300);
-            }
+            // Navigate directly to the streaming task view — the SSE stream starts the research
+            viewTask(task.id);
         }
         else {
             const payload = result.payload;
@@ -537,18 +655,19 @@ function renderTaskList(tasks) {
     if (!tasks || tasks.length === 0)
         return `<div class="empty-state"><h3>${t("dashboard.noTasks")}</h3><p>${t("dashboard.noTasksDesc")}</p><button class="btn btn-primary" onclick="showNewTaskModal()">${t("dashboard.newResearch")}</button></div>`;
     const statusClass = {
-        pending: "status-pending",
-        decomposing: "status-running",
-        searching: "status-running",
-        summarizing: "status-running",
-        generating: "status-running",
-        completed: "status-completed",
-        failed: "status-failed",
+        "待处理": "status-pending",
+        "主题分解": "status-running",
+        "搜索中": "status-running",
+        "内容总结": "status-running",
+        "报告生成": "status-running",
+        "完成": "status-completed",
+        "失败": "status-failed",
+        "已终止": "status-cancelled",
     };
     return tasks
         .map((t) => {
         const sc = statusClass[t.status] || "status-pending";
-        const progressHtml = t.status !== "completed" && t.status !== "failed"
+        const progressHtml = t.status !== "完成" && t.status !== "失败" && t.status !== "已终止"
             ? `<div class="progress-bar"><div class="progress-fill" style="width:${(t.progress || 0) * 100}%"></div></div>`
             : "";
         return (`<div class="task-item" onclick="viewTask('${t.id}')">` +
@@ -615,9 +734,8 @@ async function createTask(overlay) {
         });
         const task = await r.json();
         overlay.remove();
-        await api(`/research/${task.id}/run`, { method: "POST" });
-        showPage("tasks");
-        setTimeout(() => alert(t("tasks.researchStarted")), 300);
+        // Navigate directly to the streaming task view — the SSE stream will start the research
+        viewTask(task.id);
     }
     catch (e) {
         alert(t("general.error") + ": " + e.message);
@@ -636,29 +754,24 @@ async function viewTask(taskId) {
             mc.innerHTML =
                 `<div style="margin-bottom:16px"><button class="btn btn-secondary btn-sm" onclick="showPage('tasks')">${t("tasks.back")}</button></div>` +
                     `<div class="report-content">${reportHtml}</div>`;
+            // Render LaTeX math formulas with KaTeX
+            renderMathInReport(mc);
         }
-        else {
-            let todoHtml = "";
-            if (tsk.todo_items && tsk.todo_items.length > 0) {
-                todoHtml =
-                    `<h4 style="margin:16px 0 8px">${t("tasks.researchPlan")}</h4><ul class="todo-list">` +
-                        tsk.todo_items
-                            .map((ti) => `<li class="todo-item">` +
-                            `<div class="todo-check${ti.is_completed ? " checked" : ""}"></div>` +
-                            `<span class="todo-text${ti.is_completed ? " done" : ""}">${esc(ti.content)}</span>` +
-                            `<span class="todo-priority priority-${ti.priority}">${ti.priority}</span>` +
-                            `</li>`)
-                            .join("") +
-                        `</ul>`;
-            }
-            const statusLabel = tsk.status === "completed"
-                ? "status-completed"
-                : tsk.status === "failed"
-                    ? "status-failed"
-                    : "status-running";
-            // Determine the body content based on status
+        else if (tsk.status === "失败" || tsk.status === "已终止") {
+            // Terminal error states — show error card
+            const statusLabel = tsk.status === "失败" ? "status-failed" : "status-cancelled";
+            const isCancelled = tsk.status === "已终止";
             let bodyContent = "";
-            if (tsk.status === "failed") {
+            if (isCancelled) {
+                bodyContent =
+                    `<div class="empty-state" style="padding:32px 16px">` +
+                        `<span class="empty-icon">⊘</span>` +
+                        `<h3 style="color:var(--text-secondary)">${t("tasks.researchCancelled")}</h3>` +
+                        `<p style="color:var(--text-secondary);margin-bottom:16px">${t("tasks.researchCancelledDesc")}</p>` +
+                        `<button class="btn btn-primary btn-sm" onclick="retryResearch('${tsk.id}')">${t("tasks.retry")}</button>` +
+                        `</div>`;
+            }
+            else {
                 const errorMsg = tsk.metadata_json?.error || t("tasks.researchFailed");
                 bodyContent =
                     `<div class="empty-state" style="padding:32px 16px">` +
@@ -669,14 +782,6 @@ async function viewTask(taskId) {
                         `<button class="btn btn-primary btn-sm" onclick="retryResearch('${tsk.id}')">${t("tasks.retry")}</button>` +
                         `</div>`;
             }
-            else if (tsk.summary) {
-                bodyContent =
-                    `<h4 style="margin-bottom:8px">${t("tasks.summary")}</h4>` +
-                        `<div class="card" style="background:var(--surface2);white-space:pre-wrap;max-height:400px;overflow-y:auto;font-size:14px">${esc(tsk.summary)}</div>`;
-            }
-            else {
-                bodyContent = `<div class="empty-state"><p>${t("tasks.researchInProgress")}</p></div>`;
-            }
             mc.innerHTML =
                 `<div style="margin-bottom:16px"><button class="btn btn-secondary btn-sm" onclick="showPage('tasks')">${t("tasks.back")}</button></div>` +
                     `<div class="card">` +
@@ -686,14 +791,15 @@ async function viewTask(taskId) {
                     `</div>` +
                     `<p style="color:var(--text2);margin-bottom:12px"><strong>${t("tasks.topic")}</strong> ${esc(tsk.topic)}</p>` +
                     bodyContent +
-                    todoHtml +
                     `<div style="display:flex;gap:8px;margin-top:16px">` +
-                    (tsk.status !== "completed" && tsk.status !== "failed"
-                        ? `<button class="btn btn-danger btn-sm" onclick="cancelResearch('${tsk.id}')">${t("tasks.cancelResearch")}</button>`
-                        : "") +
                     `<button class="btn btn-danger btn-sm" onclick="deleteTask('${tsk.id}')">${t("tasks.delete")}</button>` +
                     `</div>` +
                     `</div>`;
+        }
+        else {
+            // Task is in progress — use SSE streaming view
+            renderStreamingView(mc, tsk);
+            connectResearchStream(tsk.id);
         }
     }
     catch (e) {
@@ -1080,8 +1186,21 @@ function parseMarkdown(md) {
 function parseInline(text) {
     if (!text)
         return "";
+    // ---- Protect LaTeX math blocks BEFORE any other processing ----
+    // Otherwise Markdown syntax (_ * etc.) inside formulas corrupts the LaTeX.
+    const mathBlocks = [];
+    // Display math: $$...$$ (multi-line allowed)
+    let out = text.replace(/\$\$([\s\S]*?)\$\$/g, (_m, formula) => {
+        mathBlocks.push(`$$\n${formula.trim()}\n$$`);
+        return `\x00MATH${mathBlocks.length - 1}\x00`;
+    });
+    // Inline math: $...$ (single line, non-empty)
+    out = out.replace(/\$([^\$\n]+?)\$/g, (_m, formula) => {
+        mathBlocks.push(`$${formula}$`);
+        return `\x00MATH${mathBlocks.length - 1}\x00`;
+    });
     // Escape HTML first
-    let out = escHtml(text);
+    out = escHtml(out);
     // Images (before links)
     out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_m, alt, src, title) => {
         const t = title ? ` title="${escHtml(title)}"` : "";
@@ -1107,6 +1226,10 @@ function parseInline(text) {
     out = out.replace(/~~(.+?)~~/g, "<del>$1</del>");
     // Soft line breaks within paragraphs → <br>
     out = out.replace(/\n/g, "<br>");
+    // Restore math blocks (raw LaTeX in KaTeX-compatible delimiters)
+    out = out.replace(/\x00MATH(\d+)\x00/g, (_m, idx) => {
+        return mathBlocks[parseInt(idx)] || "";
+    });
     return out;
 }
 function escHtml(s) {
@@ -1115,6 +1238,27 @@ function escHtml(s) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+}
+function renderMathInReport(container) {
+    // Use KaTeX auto-render if available
+    const renderMath = window.renderMathInElement;
+    if (typeof renderMath !== "function")
+        return;
+    const reportEl = container.querySelector(".report-content");
+    if (!reportEl)
+        return;
+    try {
+        renderMath(reportEl, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+            ],
+            throwOnError: false,
+        });
+    }
+    catch (_) {
+        // KaTeX rendering failure is non-critical
+    }
 }
 // ====== Utilities ======
 function esc(s) {
@@ -1152,7 +1296,244 @@ document.addEventListener("DOMContentLoaded", () => {
     if (token && user) {
         showApp();
     }
+    // Real-time field error clearing on input
+    const clearOnInput = (inputId, errorId, groupId) => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener("input", () => clearFieldError(errorId, groupId));
+        }
+    };
+    clearOnInput("loginUser", "loginUserError", "loginUserGroup");
+    clearOnInput("loginPass", "loginPassError", "loginPassGroup");
+    clearOnInput("regUser", "regUserError", "regUserGroup");
+    clearOnInput("regEmail", "regEmailError", "regEmailGroup");
+    clearOnInput("regName", "regNameError", "regNameGroup");
+    clearOnInput("regPass", "regPassError", "regPassGroup");
 });
+// ====== SSE Streaming Client ======
+// Track the active EventSource so we can clean up on navigation
+let _activeEventSource = null;
+let _watchdogTimer = null;
+let _lastStreamEvent = 0; // timestamp of last phase/token event
+function connectResearchStream(taskId) {
+    // Clean up any existing connection
+    disconnectSSE();
+    // Build SSE URL with JWT as query param (EventSource cannot set headers)
+    const streamToken = encodeURIComponent(token);
+    const url = `${API}/research/${taskId}/stream?token=${streamToken}`;
+    const es = new EventSource(url);
+    _activeEventSource = es;
+    _lastStreamEvent = Date.now();
+    // Accumulate streaming text by source
+    let streamedReport = "";
+    let streamedSummary = "";
+    // Watchdog: if no events for 120s, the research likely hung — check DB directly
+    function resetWatchdog() {
+        _lastStreamEvent = Date.now();
+        if (_watchdogTimer)
+            clearTimeout(_watchdogTimer);
+        _watchdogTimer = window.setTimeout(async () => {
+            // No event for 120s — check if task completed or failed
+            const tsk = await checkTaskStatus(taskId);
+            if (tsk && (tsk.status === "完成" || tsk.status === "失败" || tsk.status === "已终止")) {
+                disconnectSSE();
+                const mc = document.getElementById("mainContent");
+                if (mc)
+                    viewTask(taskId);
+            }
+            else if (tsk && tsk.status === "待处理") {
+                // Task never started — show error
+                const container = document.querySelector(".streaming-content");
+                if (container) {
+                    container.innerHTML +=
+                        `<div class="empty-state" style="padding:16px"><span class="empty-icon">⚠</span><p>Research did not start — the server may be overloaded. Please retry.</p></div>`;
+                }
+                disconnectSSE();
+            }
+            // If task is still running (DECOMPOSING/SEARCHING/etc.), keep waiting
+        }, 120000);
+    }
+    resetWatchdog();
+    es.addEventListener("phase", (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            updateStreamPhase(data.progress, data.message || data.phase);
+            resetWatchdog();
+        }
+        catch (_) { }
+    });
+    es.addEventListener("token", (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            if (data.source === "report") {
+                streamedReport += data.text;
+                renderStreamingMarkdown(streamedReport, false);
+            }
+            else if (data.source === "summary") {
+                streamedSummary += data.text;
+                renderStreamingSummary(streamedSummary);
+            }
+            resetWatchdog();
+        }
+        catch (_) { }
+    });
+    es.addEventListener("complete", (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            updateStreamPhase(data.progress, "Complete!");
+            // Final render with KaTeX math
+            renderStreamingMarkdown(streamedReport, true);
+            disconnectSSE();
+        }
+        catch (_) { }
+    });
+    es.addEventListener("cancelled", () => {
+        disconnectSSE();
+        // Refresh the view to show cancelled card
+        viewTask(taskId);
+    });
+    es.addEventListener("error", (e) => {
+        // Custom "error" event from server (application-level error)
+        try {
+            const data = JSON.parse(e.data);
+            const container = document.querySelector(".streaming-content");
+            if (container) {
+                container.innerHTML +=
+                    `<div class="empty-state" style="padding:16px"><span class="empty-icon">⚠</span><p>${esc(data.message)}</p></div>`;
+            }
+            // Also show error in phase text
+            const phaseEl = document.getElementById("streamPhase");
+            if (phaseEl)
+                phaseEl.textContent = "Error: " + data.message;
+            disconnectSSE();
+        }
+        catch (_) { }
+    });
+    es.addEventListener("heartbeat", () => {
+        // Keep-alive ping — no action needed (watchdog is reset by phase/token only)
+    });
+    // Handle connection errors (EventSource auto-reconnects by default)
+    es.onerror = () => {
+        // Check if task reached a terminal state while we were disconnected
+        checkTaskCompleted(taskId).then((completed) => {
+            if (completed) {
+                disconnectSSE();
+                viewTask(taskId);
+            }
+        });
+    };
+}
+function disconnectSSE() {
+    if (_watchdogTimer) {
+        clearTimeout(_watchdogTimer);
+        _watchdogTimer = null;
+    }
+    if (_activeEventSource) {
+        _activeEventSource.close();
+        _activeEventSource = null;
+    }
+}
+async function checkTaskStatus(taskId) {
+    try {
+        const r = await api(`/research/${taskId}`);
+        if (r.ok)
+            return await r.json();
+    }
+    catch (_) { }
+    return null;
+}
+async function checkTaskCompleted(taskId) {
+    try {
+        const r = await api(`/research/${taskId}`);
+        if (r.ok) {
+            const tsk = await r.json();
+            return tsk.status === "完成" || !!tsk.final_report;
+        }
+    }
+    catch (_) { }
+    return false;
+}
+function renderStreamingView(container, task) {
+    const progressPct = ((task.progress || 0) * 100).toFixed(0);
+    container.innerHTML =
+        `<div style="margin-bottom:16px">` +
+            `<button class="btn btn-secondary btn-sm" onclick="showPage('tasks')">${t("tasks.back")}</button>` +
+            `<button class="btn btn-danger btn-sm" onclick="cancelResearch('${task.id}')" style="margin-left:8px">${t("tasks.cancelResearch")}</button>` +
+            `</div>` +
+            `<div class="card">` +
+            `<div class="card-header">` +
+            `<span class="card-title">${esc(task.title)}</span>` +
+            `<span class="status-badge status-running" id="streamStatus">${esc(task.status)}</span>` +
+            `</div>` +
+            `<p style="color:var(--text2);margin-bottom:4px"><strong>${t("tasks.topic")}</strong> ${esc(task.topic)}</p>` +
+            `<div class="progress-bar-container">` +
+            `<div class="progress-bar-fill" id="streamProgress" style="width:${progressPct}%"></div>` +
+            `</div>` +
+            `<div class="stream-phase-text" id="streamPhase"></div>` +
+            `<div class="stream-report-container">` +
+            `<div class="streaming-content report-content streaming-active" id="streamContent"></div>` +
+            `</div>` +
+            `</div>`;
+}
+function updateStreamPhase(progress, message) {
+    const phaseEl = document.getElementById("streamPhase");
+    const progressEl = document.getElementById("streamProgress");
+    const statusEl = document.getElementById("streamStatus");
+    if (phaseEl)
+        phaseEl.textContent = message;
+    if (progressEl) {
+        progressEl.style.width = `${(progress * 100).toFixed(0)}%`;
+    }
+    // Update status badge text based on progress phase
+    if (statusEl) {
+        // Map progress to Chinese status label
+        if (progress >= 1.0) {
+            statusEl.textContent = "完成";
+            statusEl.className = "status-badge status-completed";
+        }
+        else if (progress >= 0.85) {
+            statusEl.textContent = "报告生成";
+        }
+        else if (progress >= 0.75) {
+            statusEl.textContent = "内容总结";
+        }
+        else if (progress >= 0.05) {
+            statusEl.textContent = "搜索中";
+        }
+        else {
+            statusEl.textContent = "主题分解";
+        }
+    }
+}
+function renderStreamingMarkdown(mdText, isFinal) {
+    const contentEl = document.getElementById("streamContent");
+    if (!contentEl)
+        return;
+    const html = parseMarkdown(mdText);
+    contentEl.innerHTML = html;
+    // Auto-scroll to bottom
+    const container = contentEl.parentElement;
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+    // Render KaTeX only on final render (expensive)
+    if (isFinal) {
+        renderMathInReport(contentEl);
+        contentEl.classList.remove("streaming-active");
+    }
+    else {
+        contentEl.classList.add("streaming-active");
+    }
+}
+function renderStreamingSummary(text) {
+    // Summary text appears above the report during generation
+    // For now, just log it — the report content is the primary display
+    const phaseEl = document.getElementById("streamPhase");
+    if (phaseEl && text.length < 200) {
+        // Show short preview of summary in phase area
+        phaseEl.textContent = text.slice(0, 100) + (text.length > 100 ? "..." : "");
+    }
+}
 // Expose functions to global scope for onclick handlers
 Object.assign(window, {
     showRegister,

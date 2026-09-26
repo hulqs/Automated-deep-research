@@ -7,7 +7,7 @@ from datetime import datetime
 engine = create_async_engine(
     setting.DATABASE_URL,
     echo=setting.DEBUG,
-    connect_args={"check_same_thread": False},  # 允许跨线程
+    connect_args={"check_same_thread": False},
 )
 
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

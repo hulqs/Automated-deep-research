@@ -2,6 +2,7 @@
 Agent 3: Content Summarization.
 """
 import logging
+from typing import AsyncGenerator
 from langchain_core.prompts import ChatPromptTemplate
 from app.agents.base import BaseAgent
 
@@ -78,9 +79,37 @@ Create a round summary. Return ONLY valid JSON with no extra text:
             f"Topic: {topic}\n"
             f"Research rounds:\n"
             f"{'\\n=== ROUND ===\\n'.join(rounds_text)[:8000]}\n\n"
-            "Produce a comprehensive academic summary in Markdown format with sections:"
+            "Produce a comprehensive academic summary in Markdown format wi"
+            "th sections:"
             "\n## 概述\n## 核心发现\n## 不同观点\n## 知识空白\n## 参考文献\n"
             "Write in Chinese if the topic and materials are in Chinese."
         )
 
         return await self.call_llm(SUMMARIZATION_SYSTEM, user_prompt)
+
+    async def final_summary_stream(
+        self, topic: str, all_rounds: list[dict]
+    ) -> AsyncGenerator[str, None]:
+        """Stream the final comprehensive summary generation token by token.
+
+        Uses the same prompt as final_summary() but yields each token
+        as it arrives from the LLM for real-time SSE streaming.
+        """
+        rounds_text = []
+        for rd in all_rounds:
+            rounds_text.append(
+                f"Round {rd.get('round', '?')}: {rd.get('round_summary', '')[:2000]}"
+            )
+
+        user_prompt = (
+            f"Topic: {topic}\n"
+            f"Research rounds:\n"
+            f"{'\\n=== ROUND ===\\n'.join(rounds_text)[:8000]}\n\n"
+            "Produce a comprehensive academic summary in Markdown format wi"
+            "th sections:"
+            "\n## 概述\n## 核心发现\n## 不同观点\n## 知识空白\n## 参考文献\n"
+            "Write in Chinese if the topic and materials are in Chinese."
+        )
+
+        async for token in self.call_llm_stream(SUMMARIZATION_SYSTEM, user_prompt):
+            yield token

@@ -1,0 +1,38 @@
+# ---- 版本控制 / IDE ----
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# ---- Python ----
+**/__pycache__/
+**/*.py[cod]
+.venv/
+venv/
+*.db
+*.sqlite3
+
+# ---- Node ----
+**/node_modules/
+frontend/app.js.map
+
+# ---- 本地环境与密钥（绝对不要打进镜像）----
+**/.env
+.env
+
+# ---- 本地运行时数据 ----
+backend/uploads/
+backend/reports/
+backend/data/
+
+# ---- 文档 / 工具目录 ----
+*.md
+.workbuddy/
+.agents/
+.arts/
+.claude/
+.codeartsdoer/
+skills/
+skills-lock.json

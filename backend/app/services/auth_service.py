@@ -25,15 +25,23 @@ class AuthService:
                 detail="Password must be different from your username",
             )
 
-        # Check password uniqueness across all users
-        result = await db.execute(select(User))
-        all_users = result.scalars().all()
-        for existing_user in all_users:
-            if verify_password(data.password, existing_user.hashed_password):
-                raise HTTPException(
-                    status_code=400,
-                    detail="This password is already in use by another account",
-                )
+        # Check password uniqueness across all users (best-effort, non-blocking)
+        try:
+            result = await db.execute(select(User))
+            all_users = result.scalars().all()
+            for existing_user in all_users:
+                try:
+                    if existing_user.hashed_password and verify_password(data.password, existing_user.hashed_password):
+                        raise HTTPException(
+                            status_code=400,
+                            detail="This password is already in use by another account",
+                        )
+                except ValueError:
+                    # Skip users with corrupted/invalid password hashes
+                    continue
+        except Exception:
+            # If the check fails for any reason, don't block registration
+            pass
 
         user = User(
             username=data.username,

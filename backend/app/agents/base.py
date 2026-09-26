@@ -3,6 +3,7 @@ Base agent using LangChain ChatOpenAI with robust JSON handling.
 """
 import json
 import logging
+from typing import AsyncGenerator
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.output_parsers import JsonOutputParser
@@ -26,9 +27,9 @@ class BaseAgent:
         base_url: str | None = None,
         model: str | None = None,
     ):
-        self._api_key = api_key or setting.OPENAI_API_KEY
-        self._base_url = base_url or setting.OPENAI_BASE_URL or "https://api.deepseek.com"
-        self._model = model or setting.OPENAI_MODEL or "deepseek-v4-flash"
+        self._api_key = (api_key or setting.OPENAI_API_KEY or "").strip()
+        self._base_url = (base_url or setting.OPENAI_BASE_URL or "https://api.deepseek.com").strip()
+        self._model = (model or setting.OPENAI_MODEL or "deepseek-v4-flash").strip()
 
         if not self._api_key:
             logger.warning(
@@ -44,13 +45,25 @@ class BaseAgent:
             f"{self._api_key[:12]}****" if self._api_key else "(empty)",
         )
 
+        # Use httpx.Timeout for explicit connect/read/write/pool timeouts.
+        # A single float only sets the read timeout in some SDK versions,
+        # which means a hung TCP connect could block indefinitely.
+        import httpx
+        _timeout = httpx.Timeout(
+            connect=15.0,   # Fail fast if the API host is unreachable
+            read=120.0,     # Allow long reads for LLM generation
+            write=30.0,
+            pool=15.0,
+        )
+
         self.llm = ChatOpenAI(
             api_key=self._api_key,
             base_url=self._base_url,
             model=self._model,
             temperature=0.3,
             max_tokens=4000,
-            timeout=120.0,
+            timeout=_timeout,
+            max_retries=1,  # Don't auto-retry at the HTTP level; tenacity handles it
         )
         self.llm_json = ChatOpenAI(
             api_key=self._api_key,
@@ -58,7 +71,8 @@ class BaseAgent:
             model=self._model,
             temperature=0.2,
             max_tokens=8192,
-            timeout=120.0,
+            timeout=_timeout,
+            max_retries=1,
             model_kwargs={"response_format": {"type": "json_object"}},
         )
         self.model = self._model
@@ -70,13 +84,15 @@ class BaseAgent:
         try:
             llm = self.llm
             if temperature != 0.3:
+                import httpx
                 llm = ChatOpenAI(
                     api_key=self._api_key,
                     base_url=self._base_url,
                     model=self._model,
                     temperature=temperature,
                     max_tokens=4000,
-                    timeout=120.0,
+                    timeout=httpx.Timeout(connect=15.0, read=120.0, write=30.0, pool=15.0),
+                    max_retries=1,
                 )
             messages = [
                 SystemMessage(content=system_prompt),
@@ -162,3 +178,43 @@ class BaseAgent:
         except Exception as e:
             logger.error(f"LLM JSON call failed (base_url={self._base_url}, model={self._model}): {str(e)}", exc_info=True)
             raise RuntimeError(f"LLM JSON call failed (base_url={self._base_url}, model={self._model}): {e}") from e
+
+    async def call_llm_stream(
+        self, system_prompt: str, user_prompt: str, temperature: float = 0.3
+    ) -> AsyncGenerator[str, None]:
+        """Stream LLM response token by token using LangChain astream.
+
+        Yields each text token as it arrives from the LLM provider.
+        Use this for real-time streaming of Markdown reports and summaries.
+        """
+        llm = ChatOpenAI(
+            api_key=self._api_key,
+            base_url=self._base_url,
+            model=self._model,
+            temperature=temperature,
+            max_tokens=4000,
+            timeout=300.0,  # Longer timeout for streaming responses
+            streaming=True,
+        )
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_prompt),
+        ]
+        try:
+            async for chunk in llm.astream(messages):
+                content = chunk.content
+                if isinstance(content, str) and content:
+                    yield content
+                elif isinstance(content, list):
+                    for block in content:
+                        text = block.get("text", "") if isinstance(block, dict) else str(block)
+                        if text:
+                            yield text
+        except Exception as e:
+            logger.error(
+                f"LLM stream failed (base_url={self._base_url}, model={self._model}): {str(e)}",
+                exc_info=True,
+            )
+            raise RuntimeError(
+                f"LLM stream failed (base_url={self._base_url}, model={self._model}): {e}"
+            ) from e

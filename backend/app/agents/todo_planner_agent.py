@@ -48,7 +48,7 @@ class TodoPlannerAgent(BaseAgent):
     ) -> dict:
         gaps_text = []
         for g in (gaps or [])[:10]:
-            gaps_text.append(
+             gaps_text.append(
                 f"- Gap: {g.get('topic', '')} -- {g.get('reason', '')}"
             )
 

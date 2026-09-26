@@ -62,7 +62,7 @@ class ImageAgent(BaseAgent):
     ) -> list[dict]:
         """
         Analyze the report and source materials to identify where images should be placed.
-
+spec coding
         ONLY suggests images when the source materials actually contain or reference images.
 
         Returns a list of image placement dicts with:

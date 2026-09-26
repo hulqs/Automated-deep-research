@@ -33,13 +33,14 @@ interface ResearchTask {
 }
 
 type TaskStatus =
-  | "pending"
-  | "decomposing"
-  | "searching"
-  | "summarizing"
-  | "generating"
-  | "completed"
-  | "failed";
+  | "待处理"
+  | "主题分解"
+  | "搜索中"
+  | "内容总结"
+  | "报告生成"
+  | "完成"
+  | "失败"
+  | "已终止";
 
 interface SearchQuery {
   query: string;
@@ -130,3 +131,35 @@ interface NaturalInputResult {
 }
 
 type PageName = "dashboard" | "tasks" | "articles" | "knowledge";
+
+// ====== SSE Streaming Event Types ======
+
+interface SSEPhaseEvent {
+  phase: string;
+  progress: number;
+  message?: string;
+  round?: number;
+}
+
+interface SSETokenEvent {
+  text: string;
+  source: "summary" | "report";
+}
+
+interface SSECompleteEvent {
+  task_id: string;
+  progress: number;
+  status?: string;
+}
+
+interface SSEErrorEvent {
+  message: string;
+}
+
+interface SSEHeartbeatEvent {
+  ts: string;
+}
+
+interface SSECancelledEvent {
+  task_id: string;
+}

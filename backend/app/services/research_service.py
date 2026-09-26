@@ -67,16 +67,26 @@ class ResearchService:
     @staticmethod
     async def run_research(db: AsyncSession, user: User, task_id: str) -> ResearchTask:
         task = await ResearchService.get_task(db, user, task_id)
-        if task.status not in (TaskStatus.PENDING, TaskStatus.FAILED):
+        if task.status not in (TaskStatus.PENDING, TaskStatus.FAILED, TaskStatus.CANCELLED):
             raise HTTPException(status_code=400, detail=f"Task is already {task.status.value}")
 
         # Load user's API settings with fallback chain:
         # DB value → global config (.env) → hardcoded default
         from app.config import setting
         us = await ResearchService._load_user_settings(db, user)
-        api_key = (us.openai_api_key if us and us.openai_api_key else None) or setting.OPENAI_API_KEY
+        api_key = ((us.openai_api_key if us and us.openai_api_key else None) or setting.OPENAI_API_KEY or "").strip()
         base_url = (us.openai_base_url if us and us.openai_base_url else None) or setting.OPENAI_BASE_URL or "https://api.deepseek.com"
         model = (us.openai_model if us and us.openai_model else None) or setting.OPENAI_MODEL or "deepseek-v4-flash"
+
+        # Pre-flight: fail fast if no API key is configured
+        if not api_key:
+            task.status = TaskStatus.FAILED
+            meta = dict(task.metadata_json or {})
+            meta["error"] = "未配置 API Key。请在设置页面配置您的 OpenAI/DeepSeek API Key，或在 backend/.env 中设置 OPENAI_API_KEY。"
+            task.metadata_json = meta
+            await db.commit()
+            await db.refresh(task)
+            return task
 
         orchestrator = ResearchOrchestrator(
             db, task,
@@ -91,6 +101,63 @@ class ResearchService:
             traceback.print_exc()
             task.status = TaskStatus.FAILED
             # Reassign dict to ensure SQLAlchemy detects the change
+            meta = dict(task.metadata_json or {})
+            meta["error"] = str(e)
+            task.metadata_json = meta
+            await db.commit()
+            await db.refresh(task)
+        return task
+
+    @staticmethod
+    async def run_research_stream(
+        db: AsyncSession, user: User, task_id: str, queue: asyncio.Queue
+    ) -> ResearchTask:
+        """Run research with SSE streaming via the provided queue.
+
+        The orchestrator pushes events to the queue; the SSE endpoint
+        reads from it and streams to the frontend.
+        """
+        task = await ResearchService.get_task(db, user, task_id)
+        if task.status not in (TaskStatus.PENDING, TaskStatus.FAILED, TaskStatus.CANCELLED):
+            raise HTTPException(status_code=400, detail=f"Task is already {task.status.value}")
+
+        # Load user's API settings with fallback chain
+        from app.config import setting
+        us = await ResearchService._load_user_settings(db, user)
+        api_key = ((us.openai_api_key if us and us.openai_api_key else None) or setting.OPENAI_API_KEY or "").strip()
+        base_url = (us.openai_base_url if us and us.openai_base_url else None) or setting.OPENAI_BASE_URL or "https://api.deepseek.com"
+        model = (us.openai_model if us and us.openai_model else None) or setting.OPENAI_MODEL or "deepseek-v4-flash"
+
+        # Pre-flight: fail fast if no API key is configured
+        if not api_key:
+            error_msg = "未配置 API Key。请在设置页面配置您的 OpenAI/DeepSeek API Key，或在 backend/.env 中设置 OPENAI_API_KEY。"
+            task.status = TaskStatus.FAILED
+            meta = dict(task.metadata_json or {})
+            meta["error"] = error_msg
+            task.metadata_json = meta
+            await db.commit()
+            await db.refresh(task)
+            await queue.put(("error", {"message": error_msg}))
+            return task
+
+        orchestrator = ResearchOrchestrator(
+            db, task,
+            api_key=api_key,
+            base_url=base_url,
+            model=model,
+        )
+        try:
+            task = await orchestrator.run_stream(queue)
+        except Exception as e:
+            print(f"[Research ERROR] Task {task_id} failed: {e}")
+            traceback.print_exc()
+            # Ensure the error reaches the SSE frontend even if run_stream's
+            # own error handler didn't fire (e.g. failure before queue.put).
+            try:
+                await queue.put(("error", {"message": str(e)}))
+            except Exception:
+                pass  # Queue might be full or gone; DB persistence is the fallback
+            task.status = TaskStatus.FAILED
             meta = dict(task.metadata_json or {})
             meta["error"] = str(e)
             task.metadata_json = meta

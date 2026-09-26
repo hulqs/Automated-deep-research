@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deep Research</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -352,6 +353,18 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
   font-size:0.825rem;margin-bottom:20px;display:none;
   font-weight:500;
 }
+.field-error{
+  display:none;
+  color:var(--danger);
+  font-size:0.75rem;
+  margin-top:4px;
+  font-weight:500;
+}
+.field-error.show{display:block}
+.form-group.has-error input{
+  border-color:var(--danger);
+  box-shadow:0 0 0 3px rgba(240,68,92,0.1);
+}
 
 /* ====== App Layout ====== */
 .app-layout{display:flex;min-height:100dvh;position:relative;z-index:1}
@@ -516,6 +529,8 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
 .status-completed::before{background:var(--success)}
 .status-failed{background:var(--danger-soft);color:var(--danger)}
 .status-failed::before{background:var(--danger)}
+.status-cancelled{background:var(--warn-soft);color:var(--warn)}
+.status-cancelled::before{background:var(--warn)}
 
 @keyframes pulse{
   0%,100%{opacity:1;transform:scale(1)}
@@ -588,6 +603,41 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
 .report-content table{width:100%;border-collapse:collapse;margin:14px 0}
 .report-content th,.report-content td{border:1px solid var(--border);padding:10px 14px;text-align:left;font-size:0.85rem}
 .report-content th{background:var(--surface2);font-weight:600}
+
+/* ====== SSE Streaming ====== */
+.streaming-content.streaming-active::after {
+  content: "▊";
+  animation: stream-blink 1s step-end infinite;
+  color: var(--accent);
+  font-weight: bold;
+}
+@keyframes stream-blink {
+  50% { opacity: 0; }
+}
+.progress-bar-container {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.stream-phase-text {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  min-height: 1.2em;
+}
+.stream-report-container {
+  min-height: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
 
 /* ====== Article Cards ====== */
 .article-card{
@@ -788,8 +838,8 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
         <h1 data-i18n="app.title">Deep Research</h1>
         <p class="subtitle" data-i18n="app.subtitle">AI-powered academic research agent system</p>
         <div id="loginError" class="error-msg"></div>
-        <div class="form-group"><label data-i18n="auth.username">Username</label><input id="loginUser" type="text" data-i18n-placeholder="auth.usernamePlaceholder" placeholder="Enter username" autocomplete="username"></div>
-        <div class="form-group"><label data-i18n="auth.password">Password</label><input id="loginPass" type="password" data-i18n-placeholder="auth.passwordPlaceholder" placeholder="Enter password" autocomplete="current-password"></div>
+        <div class="form-group" id="loginUserGroup"><label data-i18n="auth.username">Username</label><input id="loginUser" type="text" data-i18n-placeholder="auth.usernamePlaceholder" placeholder="Enter username" autocomplete="username"><span class="field-error" id="loginUserError"></span></div>
+        <div class="form-group" id="loginPassGroup"><label data-i18n="auth.password">Password</label><input id="loginPass" type="password" data-i18n-placeholder="auth.passwordPlaceholder" placeholder="Enter password" autocomplete="current-password"><span class="field-error" id="loginPassError"></span></div>
         <button class="btn btn-primary w-full" onclick="doLogin()" data-i18n="auth.signIn">Sign In</button>
         <p class="auth-link"><span data-i18n="auth.noAccount">No account?</span> <a href="javascript:showRegister()" data-i18n="auth.createOne">Create one</a></p>
       </div>
@@ -799,10 +849,10 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
         <h1 data-i18n="auth.createAccount">Create Account</h1>
         <p class="subtitle" data-i18n="auth.joinDesc">Join Deep Research to start exploring</p>
         <div id="regError" class="error-msg"></div>
-        <div class="form-group"><label data-i18n="auth.username">Username</label><input id="regUser" type="text" data-i18n-placeholder="auth.usernamePlaceholder" placeholder="Choose a username" autocomplete="username"></div>
-        <div class="form-group"><label data-i18n="auth.email">Email</label><input id="regEmail" type="email" data-i18n-placeholder="auth.emailPlaceholder" placeholder="your@email.com" autocomplete="email"></div>
-        <div class="form-group"><label data-i18n="auth.fullName">Full Name</label><input id="regName" type="text" data-i18n-placeholder="auth.fullNamePlaceholder" placeholder="Your full name" autocomplete="name"></div>
-        <div class="form-group"><label data-i18n="auth.password">Password</label><input id="regPass" type="password" data-i18n-placeholder="auth.passwordMin" placeholder="Minimum 6 characters" autocomplete="new-password"></div>
+        <div class="form-group" id="regUserGroup"><label data-i18n="auth.username">Username</label><input id="regUser" type="text" data-i18n-placeholder="auth.usernamePlaceholder" placeholder="Choose a username" autocomplete="username"><span class="field-error" id="regUserError"></span></div>
+        <div class="form-group" id="regEmailGroup"><label data-i18n="auth.email">Email</label><input id="regEmail" type="email" data-i18n-placeholder="auth.emailPlaceholder" placeholder="your@email.com" autocomplete="email"><span class="field-error" id="regEmailError"></span></div>
+        <div class="form-group" id="regNameGroup"><label data-i18n="auth.fullName">Full Name</label><input id="regName" type="text" data-i18n-placeholder="auth.fullNamePlaceholder" placeholder="Your full name" autocomplete="name"><span class="field-error" id="regNameError"></span></div>
+        <div class="form-group" id="regPassGroup"><label data-i18n="auth.password">Password</label><input id="regPass" type="password" data-i18n-placeholder="auth.passwordMin" placeholder="Minimum 6 characters" autocomplete="new-password"><span class="field-error" id="regPassError"></span></div>
         <button class="btn btn-primary w-full" onclick="doRegister()" data-i18n="auth.createAccount">Create Account</button>
         <p class="auth-link"><span data-i18n="auth.hasAccount">Already have an account?</span> <a href="javascript:showLogin()" data-i18n="auth.signIn">Sign in</a></p>
       </div>
@@ -855,5 +905,7 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-0.02em;line-height:1.2}
 </div>
 
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </body>
 </html>

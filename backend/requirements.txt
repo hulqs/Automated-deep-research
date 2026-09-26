@@ -8,7 +8,6 @@ uvicorn[standard]==0.30.0
 sqlalchemy==2.0.35
 alembic==1.13.2
 aiosqlite==0.20.0
-greenlet==3.5.3
 
 # Authentication
 python-jose[cryptography]==3.3.0
